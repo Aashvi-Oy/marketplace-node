@@ -1,0 +1,6 @@
+dist/
+dev/
+qa/
+prod/
+coverage/
+prisma

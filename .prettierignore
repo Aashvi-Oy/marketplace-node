@@ -1,0 +1,11 @@
+coverage
+dev
+qa
+prod
+reports
+test-reports
+node_modules
+package.json
+package-lock.json
+yarn.lock
+openapi-gen/templates
