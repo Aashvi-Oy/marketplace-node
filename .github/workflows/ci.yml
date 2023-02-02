@@ -4,8 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
-
+    types:
+      - opened
+    branches:
+      - main
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -15,12 +17,20 @@ permissions:
   pages: write
   id-token: write
 
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [16.13.0]
 
     steps:
       - name: Checkout repository

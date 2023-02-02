@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 
-import { AbstractController } from './AbstractController';
+import AbstractController from './abstractController';
 
 class TestGetController extends AbstractController {
     protected readonly requestSchema = null;

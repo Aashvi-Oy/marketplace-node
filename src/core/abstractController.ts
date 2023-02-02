@@ -9,7 +9,7 @@ import { validateToken } from './utils';
 export type UnknownRequest = Request<unknown, unknown, unknown>;
 export type ValidatedRequest<T extends AnyObjectSchema> = UnknownRequest & Asserts<T>;
 
-export abstract class AbstractController<TRequest extends AnyObjectSchema = AnyObjectSchema> {
+abstract class AbstractController<TRequest extends AnyObjectSchema = AnyObjectSchema> {
     protected abstract readonly requestSchema: TRequest | null;
     private res: Response;
     private error: AppError;
@@ -68,3 +68,5 @@ export abstract class AbstractController<TRequest extends AnyObjectSchema = AnyO
         return this.respond(StatusCode.Created, dto);
     }
 }
+
+export default AbstractController;

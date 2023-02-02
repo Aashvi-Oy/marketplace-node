@@ -14,7 +14,7 @@
     "serve": "nodemon -L -e ts,json -w src --signal SIGTERM -x 'npm run start:dev'",
     "start": "node -r dotenv/config 'dist/index.js'",
     "start:dev": "ts-node -r dotenv/config 'src/index.ts'",
-    "test": "jest --coverage",
+    "test": "jest --collect-coverage",
     "test:watch": "jest --watch"
   },
   "keywords": [],
