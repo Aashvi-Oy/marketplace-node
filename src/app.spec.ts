@@ -6,6 +6,6 @@ describe('GET /', () => {
     it('should return "App is running!"', async () => {
         const res = await request(app).get('/');
         expect(res.statusCode).toBe(200);
-        expect(res.text).toEqual('App is running!');
+        expect(res.body).toEqual({ health: true });
     });
 });
