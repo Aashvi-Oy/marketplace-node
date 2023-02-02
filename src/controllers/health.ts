@@ -6,3 +6,10 @@ export class HealthController extends AbstractController {
         return this.success({ health: true });
     }
 }
+
+export class TestController extends AbstractController {
+    protected readonly requestSchema = null;
+    protected async implementation() {
+        return this.success({ message: 'success' });
+    }
+}
