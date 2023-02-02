@@ -11,47 +11,60 @@ export type ValidatedRequest<T extends AnyObjectSchema> = UnknownRequest & Asser
 
 export abstract class AbstractController<TRequest extends AnyObjectSchema = AnyObjectSchema> {
     protected abstract readonly requestSchema: TRequest | null;
+    private res: Response;
+    private error: AppError;
+    private req: ValidatedRequest<TRequest>;
 
-    protected abstract implementation(req: ValidatedRequest<TRequest>, res: Response);
-
-    protected async validateRequest(req: UnknownRequest): Promise<ValidatedRequest<TRequest>> {
-        return !this.requestSchema
-            ? req
-            : await this.requestSchema.validate(req, { abortEarly: false }).catch((e) => {
-                  throw new ValidationError(e.errors?.join('\n'));
-              });
+    constructor(req: ValidatedRequest<TRequest>, res: Response) {
+        this.req = req;
+        this.res = res;
     }
 
-    public async executeWithAuth(req: UnknownRequest, res: Response): Promise<void> {
-        const authorization = req.headers.authorization;
-        try {
-            req.headers.user = validateToken(authorization) as string;
-            return this.execute(req, res);
-        } catch (err) {
-            const error = new Forbidden(err.message);
-            this.respond(res, error.status, error.message);
+    protected abstract implementation();
+
+    protected async validateRequest(): Promise<void> {
+        if (this.requestSchema) {
+            await this.requestSchema.validate(this.req, { abortEarly: false }).catch((e) => {
+                throw new ValidationError(e.errors.join(','));
+            });
         }
     }
 
-    public async execute(req: UnknownRequest, res: Response): Promise<void> {
+    public authenticate(): AbstractController {
+        const authorization = this.req.headers.authorization;
         try {
-            const validatedReq = await this.validateRequest(req);
-            await this.implementation(validatedReq, res);
+            this.req.headers.user = validateToken(authorization) as string;
         } catch (err) {
-            const e = err instanceof AppError ? err : new AppFailure(err);
-            this.respond(res, e.status, e.message);
+            this.error = new Forbidden(err.message);
+        }
+        return this;
+    }
+
+    public async execute(): Promise<void> {
+        if (!this.error) {
+            try {
+                await this.validateRequest();
+                await this.implementation();
+            } catch (err) {
+                const e = err instanceof AppError ? err : new AppFailure(err);
+                this.respond(e.status, e.message);
+            }
+        } else {
+            this.respond(this.error.status, this.error.message);
         }
     }
 
-    public respond(res: Response, status: number, dto?: unknown) {
-        return dto ? res.status(status).send(typeof dto === 'string' ? { message: dto } : dto) : res.sendStatus(status);
+    public respond(status: number, dto?: unknown) {
+        return dto
+            ? this.res.status(status).send(typeof dto === 'string' ? { message: dto } : dto)
+            : this.res.sendStatus(status);
     }
 
-    public success(res: Response, dto?: unknown) {
-        return this.respond(res, StatusCode.Success, dto);
+    public success(dto?: unknown) {
+        return this.respond(StatusCode.Success, dto);
     }
 
-    public created(res: Response, dto?: unknown) {
-        return this.respond(res, StatusCode.Created, dto);
+    public created(dto?: unknown) {
+        return this.respond(StatusCode.Created, dto);
     }
 }

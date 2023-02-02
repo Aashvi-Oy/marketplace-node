@@ -1,75 +1,104 @@
+import * as yup from 'yup';
+
 import { AbstractController } from './AbstractController';
-import { AppError } from './errors';
-import * as util from './utils';
 
 class TestGetController extends AbstractController {
     protected readonly requestSchema = null;
 
-    protected implementation(req, res) {
-        return this.success(res, { message: 'success' });
+    protected implementation() {
+        return this.success({ message: 'success' });
     }
 }
 
-class TestPostController extends AbstractController {
-    protected readonly requestSchema = null;
+const BodySchema = yup.object().shape({
+    name: yup.string().required('Name is required'),
+    age: yup.number().nullable(),
+});
 
-    protected implementation(req, res) {
-        return this.created(res, { message: 'created' });
+const requestSchema = yup.object().shape({
+    body: BodySchema.noUnknown().required(),
+    params: yup.object().shape({ id: yup.string() }),
+});
+
+class TestPostController extends AbstractController {
+    protected readonly requestSchema = requestSchema;
+
+    protected implementation() {
+        throw new Error('Not implemented');
     }
 }
 
 describe('AbstractController', () => {
-    let controller: TestGetController;
     let req;
     let res;
 
     beforeEach(() => {
-        controller = new TestGetController();
         req = { headers: {} };
         res = {
             sendStatus: jest.fn(),
             status: jest.fn().mockReturnValue({ send: jest.fn() }),
+            send: jest.fn(),
         };
     });
 
-    it('should call implementation with validated request', async () => {
-        const implementationMock = jest.spyOn(controller, 'execute');
-        await controller.execute(req, res);
-        expect(implementationMock).toHaveBeenCalledWith(req, res);
+    describe('Authentication test', () => {
+        it('should throw forbidden for request without token', async () => {
+            const controller = new TestGetController(req, res);
+            const respondMock = jest.spyOn(controller, 'respond');
+            await controller.authenticate().execute();
+            expect(respondMock).toHaveBeenCalledWith(403, 'headers.authorization is a required field');
+        });
+
+        it('should throw forbidden for request with invalid token format', async () => {
+            const controller = new TestGetController({ ...req, headers: { authorization: 'token' } }, res);
+            const respondMock = jest.spyOn(controller, 'respond');
+            await controller.authenticate().execute();
+            expect(respondMock).toHaveBeenCalledWith(
+                403,
+                'headers.authorization is not in correct format: Bearer [token]'
+            );
+        });
+
+        it('should success for valid format of token', async () => {
+            const controller = new TestGetController({ ...req, headers: { authorization: 'Bearer token' } }, res);
+            const respondMock = jest.spyOn(controller, 'respond');
+            await controller.authenticate().execute();
+            expect(respondMock).toHaveBeenCalledWith(200, { message: 'success' });
+        });
     });
 
-    it('should call executeWithAuth with error status and message on catch', async () => {
-        jest.spyOn(util, 'validateToken').mockRejectedValue(new AppError('error') as never);
+    it('should response with an object for an object input', async () => {
+        const controller = new TestGetController(req, res);
+        await controller.respond(200, { message: 'success' });
+        expect(res.status().send).toHaveBeenCalledWith({ message: 'success' });
+        expect(res.status).toHaveBeenCalledWith(200);
+    });
+
+    it('should send only status if message is not present', async () => {
+        const controller = new TestGetController(req, res);
+        await controller.respond(200);
+        expect(res.sendStatus).toHaveBeenCalledWith(200);
+    });
+
+    it('create method should call respond with 201 with dto ', async () => {
+        const controller = new TestGetController(req, res);
         const respondMock = jest.spyOn(controller, 'respond');
-        await controller.executeWithAuth(req, res);
-        expect(respondMock).toHaveBeenCalledWith(res, 403, { message: 'error' });
+        await controller.created({ message: 'success' });
+        expect(respondMock).toHaveBeenCalledWith(201, { message: 'success' });
     });
 
-    it('should call respond with error status and message on catch', async () => {
+    it('should complain about missing required field from the body', async () => {
+        const reqBody = { body: {} };
+        const controller = new TestPostController(reqBody, res);
         const respondMock = jest.spyOn(controller, 'respond');
-        await controller.execute(req, res);
-        expect(respondMock).toHaveBeenCalledWith(res, 200, { message: 'success' });
+        await controller.execute();
+        expect(respondMock).toHaveBeenCalledWith(400, 'Name is required');
     });
 
-    it('should call respond with string message and status 200', async () => {
-        jest.spyOn(controller, 'respond').mockImplementation((res, status, dto) =>
-            res.status(status).send({ message: dto })
-        );
-        const respondMock = jest.spyOn(controller, 'respond');
-        await controller.execute(req, res);
-        expect(respondMock).toHaveBeenCalledWith(res, 200, { message: 'success' });
-    });
-
-    it('should call success with success status and message success', async () => {
-        const respondMock = jest.spyOn(controller, 'success');
-        await controller.execute(req, res);
-        expect(respondMock).toHaveBeenCalledWith(res, { message: 'success' });
-    });
-
-    it('should call created with success status and message success', async () => {
-        const postController = new TestPostController();
-        const respondMock = jest.spyOn(postController, 'created');
-        await postController.execute(req, res);
-        expect(respondMock).toHaveBeenCalledWith(res, { message: 'created' });
+    it('should throw app failure error', async () => {
+        const reqBody = { body: { name: 'test', age: 12 } };
+        const controller = new TestPostController(reqBody, res);
+        await controller.execute();
+        expect(res.status).toHaveBeenCalledWith(500);
     });
 });
