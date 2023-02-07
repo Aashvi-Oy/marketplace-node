@@ -1,0 +1,129 @@
+openapi: 3.0.0
+info:
+    title: Product CRUD Operations API
+    version: 1.0.0
+servers:
+    - url: https://api.example.com/v1
+paths:
+    /products:
+        get:
+            summary: Retrieve a list of all products
+            responses:
+                200:
+                    description: A list of all products
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/Product"
+        post:
+            summary: Create a new product
+            security:
+                - bearerAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Product"
+            responses:
+                201:
+                    description: The newly created product
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Product"
+    /products/{id}:
+        get:
+            summary: Retrieve a specific product by id
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  description: The id of the product to retrieve
+                  schema:
+                      type: integer
+            responses:
+                200:
+                    description: The requested product
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Product"
+        patch:
+            summary: Update a specific product by id
+            security:
+                - bearerAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  description: The id of the product to update
+                  schema:
+                      type: integer
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Product"
+            responses:
+                200:
+                    description: The updated product
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Product"
+        delete:
+            summary: Delete a specific product by id
+            security:
+                - bearerAuth: []
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  description: The id of the product to delete
+                  schema:
+                      type: integer
+            responses:
+                204:
+                    description: The product has been successfully deleted
+components:
+    schemas:
+        Product:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: The id of the product
+                name:
+                    type: string
+                    description: The name of the product
+                description:
+                    type: string
+                    description: The description of the product
+                tags:
+                    type: array
+                    items:
+                        type: string
+                    description: A list of tags associated with the product
+                image:
+                    type: string
+                    description: An image of the product
+                ratings:
+                    type: array
+                    items:
+                        type: integer
+                    description: A list of ratings given to the product
+                price:
+                    type: number
+                    description: The price of the product
+                    required:
+                        - name
+                        - price
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT

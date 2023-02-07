@@ -2,6 +2,10 @@
 
 This repository contains a list of REST API endpoint for operating a simple marketplace, It's built using PostgreSQL as database and Nodejs as backend.
 
+## DOCS
+
+The API documentation can be found [here](https://aashvi-oy.github.io/marketplace-node/)
+
 ## Environment Setup
 
 To run this project, make sure you have the following installed on your system.
