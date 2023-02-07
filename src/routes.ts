@@ -1,7 +1,10 @@
 import { Router } from 'express';
 
-const router = Router();
+import { HealthController } from './controllers/health';
 
-router.get('/', (req, res) => res.send('App is running!'));
+const router = Router();
+const healthController = (req, res) => new HealthController(req, res).execute();
+
+router.get('/', healthController);
 
 export default router;
