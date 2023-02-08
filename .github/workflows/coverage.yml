@@ -21,7 +21,7 @@ jobs:
         run: yarn test
 
       - name: Upload code coverage for ref branch
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ref-lcov.info
           path: ./coverage/lcov.info
