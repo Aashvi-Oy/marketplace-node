@@ -1,8 +1,8 @@
 import request from 'supertest';
 
-import app from './app';
-import prisma from './db/client';
-import { Item, User } from './models';
+import app from '../../app';
+import prisma from '../../db/client';
+import { Item, User } from '../../models';
 
 const itemMock: Item = {
     id: 1,
@@ -40,15 +40,6 @@ describe('Routes test', () => {
         await prisma.$transaction([deleteItem, deleteUser]);
         await prisma.$disconnect();
     });
-
-    it('GET / => health', async () =>
-        request(app)
-            .get('/')
-            .expect('Content-Type', /json/)
-            .expect(200)
-            .then((response) => {
-                expect(response.body).toEqual({ health: true });
-            }));
 
     describe('Item GET routes', () => {
         it('GET /items => All items', async () => {
