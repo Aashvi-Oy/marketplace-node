@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/Aashvi-Oy/marketplace-node/branch/main/graph/badge.svg?token=C1ZQDD5Z9W)](https://codecov.io/gh/Aashvi-Oy/marketplace-node)
+
 # SIMPLE MARKET PLACE NODE PROJECT
 
 This repository contains a list of REST API endpoint for operating a simple marketplace, It's built using PostgreSQL as database and Nodejs as backend.
