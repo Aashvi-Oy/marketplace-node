@@ -13,6 +13,33 @@ services:
     ports:
       - "127.0.0.1:5432:5432"
     container_name: marketplace-database
+
+  test_db:
+    image: postgres:15.1-alpine3.17
+    restart: always
+    container_name: integration-tests-prisma
+    ports:
+      - "6789:5432"
+    environment:
+      POSTGRES_USER: prisma
+      POSTGRES_PASSWORD: prisma
+      POSTGRES_DB: tests
+
+  api:
+    build:
+      context: .
+      target: backend
+    environment:
+      - DATABASE_URL=postgresql://marketplace_user:marketplace_password@db/marketplace?schema=public
+    container_name: node-task-api
+    volumes:
+      - ./src:/app/src:delegated
+    command: yarn serve
+    depends_on:
+      - db
+    ports:
+      - "127.0.0.1:8080:8080"
+
 volumes:
   database-volume: {}
 networks:

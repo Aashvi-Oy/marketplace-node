@@ -1,5 +1,8 @@
-import { AppError, ValidationError } from './errors';
+import { Response, Request } from 'express';
 
+import { StatusCode } from '../models';
+
+import { AppError, ValidationError } from './errors';
 export const validateToken = (authorization: string): string | AppError => {
     if (!authorization) {
         throw new ValidationError('headers.authorization is a required field');
@@ -16,5 +19,14 @@ export const validateToken = (authorization: string): string | AppError => {
     // const verified = verify(token, pem, { algorithms: ['RS256'] });
 
     // return Promise.resolve(verified['username']);
-    return 'username';
+    return '1';
+};
+
+export const authenticate = (req: Request, res: Response, next: () => void): void => {
+    try {
+        req.headers['user'] = validateToken(req.headers.authorization) as string;
+        next();
+    } catch (e) {
+        res.status(StatusCode.Forbidden).send({ message: e.message });
+    }
 };

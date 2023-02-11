@@ -5,12 +5,29 @@ on: [pull_request]
 jobs:
   base_branch_cov:
     runs-on: ubuntu-latest
+    container: node:16.13.0
+
+    services:
+      postgres:
+        image: postgres:15.1-alpine3.17
+        env:
+          POSTGRES_USER: prisma
+          POSTGRES_PASSWORD: prisma
+          POSTGRES_DB: tests
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.base_ref }}
       - name: Use Node.js v16.13.0
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: v16.13.0
 
@@ -19,6 +36,9 @@ jobs:
 
       - name: Run test coverage
         run: yarn test
+        env:
+          POSTGRES_HOST: postgres
+          DATABASE_URL: postgresql://prisma:prisma@postgres:5432/tests?schema=public
 
       - name: Upload code coverage for ref branch
         uses: actions/upload-artifact@v2
@@ -29,10 +49,26 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     needs: base_branch_cov
+    container: node:16.13.0
+
+    services:
+      postgres:
+        image: postgres:15.1-alpine3.17
+        env:
+          POSTGRES_USER: prisma
+          POSTGRES_PASSWORD: prisma
+          POSTGRES_DB: tests
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js v16.13.0
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: v16.13.0
 
@@ -46,6 +82,9 @@ jobs:
 
       - name: Run test coverage
         run: yarn test
+        env:
+          POSTGRES_HOST: postgres
+          DATABASE_URL: postgresql://prisma:prisma@postgres:5432/tests?schema=public
 
       #  Compares two code coverage files and generates report as a comment
       - name: Generate Code Coverage report
@@ -55,6 +94,6 @@ jobs:
           barecheck-github-app-token: ${{ secrets.BARECHECK_GITHUB_APP_TOKEN }}
           lcov-file: "./coverage/lcov.info"
           base-lcov-file: "./lcov.info"
-          minimum-ratio: 0 # Fails Github action once code coverage is decreasing
+          minimum-ratio: 10 # Fails Github action once code coverage is below 90%
           send-summary-comment: true
           show-annotations: "warning" # Possible options warning|error
