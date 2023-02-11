@@ -21,6 +21,11 @@ To run this project, make sure you have the following installed on your system.
 Before moving forward, confirm that the NodeJs is installed by checking its version with 'node -v' command. Also check that you have YARN installed with the 'yarn -v' command.
 Next, check the installation of PostgreSQL database with 'postgres --version' command and check that its running with 'psql --version' command.
 
+## Prisma Setup
+
+-   Migration: `prisma migrate dev --name <migration-name>`
+-   Generate: `prisma generate --schema=./prisma/schema.prisma`
+
 ## Using docker
 
 If you have docker and docker-compose installed on your system, you can use the following command to start the application.

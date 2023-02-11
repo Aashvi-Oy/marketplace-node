@@ -20,9 +20,9 @@ export class ValidationError extends AppError {
     }
 }
 
-export class Forbidden extends AppError {
-    readonly status: StatusCode = StatusCode.Forbidden;
-    constructor(readonly message: string) {
+export class NotFoundError extends AppError {
+    readonly status: StatusCode = StatusCode.NotFound;
+    constructor(readonly message) {
         super(message);
     }
 }

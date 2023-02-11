@@ -4,6 +4,7 @@
   "description": "Simple market place node",
   "main": "dist/index.js",
   "scripts": {
+    "docker:up": "docker-compose up test_db",
     "build": "npm run clean && tsc",
     "clean": "rimraf ./dist",
     "eslint": "eslint --ext .js,.ts .",
@@ -14,7 +15,7 @@
     "serve": "nodemon -L -e ts,json -w src --signal SIGTERM -x 'npm run start:dev'",
     "start": "node -r dotenv/config 'dist/index.js'",
     "start:dev": "ts-node -r dotenv/config 'src/index.ts'",
-    "test": "jest --collect-coverage",
+    "test": "yarn prisma migrate deploy && jest --collect-coverage",
     "test:watch": "jest --watch"
   },
   "keywords": [],

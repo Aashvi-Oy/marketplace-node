@@ -49,6 +49,3 @@ jobs:
 
       - name: Run prettier check
         run: yarn prettier:check
-
-      - name: Run the tests
-        run: yarn test
