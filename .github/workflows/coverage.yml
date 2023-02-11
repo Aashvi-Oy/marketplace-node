@@ -5,7 +5,7 @@ on: [pull_request]
 jobs:
   base_branch_cov:
     runs-on: ubuntu-latest
-    container: node:16.13.0
+    container: node:16.19.0
 
     services:
       postgres:
@@ -49,7 +49,7 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     needs: base_branch_cov
-    container: node:16.13.0
+    container: node:16.19.0
 
     services:
       postgres:
