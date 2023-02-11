@@ -1,15 +1,6 @@
 name: Continuous Integration
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    types:
-      - opened
-    branches:
-      - main
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+on: [push, pull_request]
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -25,16 +16,32 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    name: Test market place API
+    container: node:16.19.0
     strategy:
       matrix:
         node-version: [16.19.0]
 
+    services:
+      postgres:
+        image: postgres:15.1-alpine3.17
+        env:
+          POSTGRES_USER: prisma
+          POSTGRES_PASSWORD: prisma
+          POSTGRES_DB: tests
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.base_ref }}
 
       - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -49,3 +56,17 @@ jobs:
 
       - name: Run prettier check
         run: yarn prettier:check
+
+      - name: Run test coverage
+        run: yarn test
+        env:
+          POSTGRES_HOST: postgres
+          DATABASE_URL: postgresql://prisma:prisma@postgres:5432/tests?schema=public
+
+      - name: Upload coverage reports to Codecov
+        run: |
+          # Replace `linux` below with the appropriate OS
+          # Options are `alpine`, `linux`, `macos`, `windows`
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov -t ${CODECOV_TOKEN}
