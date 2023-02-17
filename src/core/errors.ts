@@ -26,3 +26,10 @@ export class NotFoundError extends AppError {
         super(message);
     }
 }
+
+export class UnAuthorizedError extends AppError {
+    readonly status: StatusCode = StatusCode.Unauthorized;
+    constructor(readonly message) {
+        super(message);
+    }
+}
