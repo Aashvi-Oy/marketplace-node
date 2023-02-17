@@ -2,11 +2,102 @@ openapi: 3.0.0
 info:
     title: Item CRUD Operations API
     version: 1.0.0
+    description: |-
+        This is a simple restful API application for operating market place.
+    contact:
+        email: aman@aashvi.net
+    license:
+        name: Apache 2.0
+        url: http://www.apache.org/licenses/LICENSE-2.0.html
+
 servers:
-    - url: https://api.example.com/v1
+    - url: http://localhost:8080
+
+tags:
+    - name: User
+      description: Operations about users
+    - name: Items
+      description: All purchase able items
+
 paths:
+    /user/login:
+        get:
+            tags:
+                - User
+            summary: Retrieve a user with with a given email and password
+            responses:
+                200:
+                    description: Retrieve a user and its bearer token
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/User"
+
+    /user/register:
+        post:
+            tags:
+                - User
+            summary: Create a new user
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                email:
+                                    type: string
+                                    description: The email of the user to create
+                                password:
+                                    type: string
+                                    description: The password of the user to create
+            responses:
+                201:
+                    description: The newly created user
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/User"
+    /user:
+        patch:
+            tags:
+                - User
+            security:
+                - bearerAuth: []
+            summary: Update logged in user information
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/UpdatingUser"
+            responses:
+                200:
+                    description: Update logged in user information
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/User"
+
+        delete:
+            tags:
+                - User
+            security:
+                - bearerAuth: []
+            summary: Delete logged in user
+            responses:
+                200:
+                    description: User can delete himself/herself
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    message:
+                                        type: string
+                                        description: User deleted successfully
     /items:
         get:
+            tags:
+                - Items
             summary: Retrieve a list of all items
             responses:
                 200:
@@ -18,6 +109,8 @@ paths:
                                 items:
                                     $ref: "#/components/schemas/Item"
         post:
+            tags:
+                - Items
             summary: Create a new item
             security:
                 - bearerAuth: []
@@ -36,6 +129,8 @@ paths:
                                 $ref: "#/components/schemas/Item"
     /items/{id}:
         get:
+            tags:
+                - Items
             summary: Retrieve a specific item by id
             parameters:
                 - name: id
@@ -52,6 +147,8 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Item"
         patch:
+            tags:
+                - Items
             summary: Update a specific item by id
             security:
                 - bearerAuth: []
@@ -76,6 +173,8 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Item"
         delete:
+            tags:
+                - Items
             summary: Delete a specific item by id
             security:
                 - bearerAuth: []
@@ -125,6 +224,43 @@ components:
                     required:
                         - name
                         - price
+        User:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: Id of the user
+                email:
+                    type: string
+                    description: Email address of the user
+                password:
+                    type: string
+                    description: User password
+                name:
+                    type: string
+                    description: Name of the user
+                address:
+                    type: string
+                    description: Address of the user
+                phone:
+                    type: string
+                    description: Phone number of the user
+        UpdatingUser:
+            type: object
+            properties:
+                password:
+                    type: string
+                    description: User password
+                name:
+                    type: string
+                    description: Name of the user
+                address:
+                    type: string
+                    description: Address of the user
+                phone:
+                    type: string
+                    description: Phone number of the user
+
     securitySchemes:
         bearerAuth:
             type: http
