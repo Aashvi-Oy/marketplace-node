@@ -1,8 +1,9 @@
 import { Response } from 'express';
 import * as yup from 'yup';
 
-import AbstractController, { ValidatedRequest } from './abstractController';
-import { AppFailure } from './errors';
+import { Validated } from '../../models';
+import AbstractController from '../abstractController';
+import { AppFailure } from '../errors';
 
 class TestGetController extends AbstractController {
     protected readonly requestSchema = null;
@@ -25,12 +26,12 @@ const requestSchema = yup.object().shape({
 class TestPostController extends AbstractController<typeof requestSchema> {
     protected readonly requestSchema = requestSchema;
 
-    protected implementation(req: ValidatedRequest<typeof requestSchema>, res: Response) {
+    protected implementation(req: Validated<typeof requestSchema>, res: Response) {
         this.respond(res, 500, { message: 'System failure' });
     }
 }
 
-class AppFailiureController extends AbstractController {
+class AppFailureController extends AbstractController {
     protected readonly requestSchema = null;
 
     protected implementation() {
@@ -50,32 +51,6 @@ describe('AbstractController', () => {
             send: jest.fn(),
         };
     });
-
-    // describe('Authentication test', () => {
-    //     it('should throw forbidden for request without token', async () => {
-    //         const controller = new TestGetController();
-    //         const respondMock = jest.spyOn(controller, 'respond');
-    //         await controller.authenticate().execute();
-    //         expect(respondMock).toHaveBeenCalledWith(403, 'headers.authorization is a required field');
-    //     });
-    //
-    //     it('should throw forbidden for request with invalid token format', async () => {
-    //         const controller = new TestGetController();
-    //         const respondMock = jest.spyOn(controller, 'respond');
-    //         await controller.execute({ ...req, headers: { authorization: 'token' } }, res);
-    //         expect(respondMock).toHaveBeenCalledWith(
-    //             403,
-    //             'headers.authorization is not in correct format: Bearer [token]'
-    //         );
-    //     });
-    //
-    //     it('should success for valid format of token', async () => {
-    //         const controller = new TestGetController({ ...req, headers: { authorization: 'Bearer token' } }, res);
-    //         const respondMock = jest.spyOn(controller, 'respond');
-    //         await controller.authenticate().execute();
-    //         expect(respondMock).toHaveBeenCalledWith(200, { message: 'success' });
-    //     });
-    // });
 
     it('should response with an object for an object input', async () => {
         const controller = new TestGetController();
@@ -102,7 +77,7 @@ describe('AbstractController', () => {
         const controller = new TestPostController();
         const respondMock = jest.spyOn(controller, 'respond');
         await controller.execute(reqBody, res);
-        expect(respondMock).toHaveBeenCalledWith(res, 400, 'Name is required');
+        expect(respondMock).toHaveBeenCalledWith(res, 400, ['Name is required']);
     });
 
     it('should throw 500 system failure failure error', async () => {
@@ -114,7 +89,7 @@ describe('AbstractController', () => {
     });
 
     it('should throw app failure error', async () => {
-        const controller = new AppFailiureController();
+        const controller = new AppFailureController();
         const respondMock = jest.spyOn(controller, 'respond');
         await controller.execute(req, res);
         expect(respondMock).toHaveBeenCalledWith(res, 500, 'App failure');

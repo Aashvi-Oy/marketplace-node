@@ -1,11 +1,12 @@
 import { Router } from 'express';
 
-import { authenticate } from '../../core/auth';
-
-import { DeleteItemController } from './delete.controller';
-import { GetAllItemsController, GetItemController } from './get.controller';
-import { PatchItemController } from './patch.controller';
-import { PostItemController } from './post.controller';
+import {
+    GetAllItemsController,
+    GetItemController,
+    PostItemController,
+    PatchItemController,
+    DeleteItemController,
+} from './controllers';
 
 export const routes = Router();
 
@@ -19,6 +20,6 @@ const deleteItemController = (req, res) => new DeleteItemController().execute(re
 // Items routes
 routes.get('/', getAllItemsController);
 routes.get('/:id', getItemController);
-routes.post('/', authenticate, postItemController);
-routes.patch('/:id', authenticate, patchItemController);
-routes.delete('/:id', authenticate, deleteItemController);
+routes.post('/', postItemController);
+routes.patch('/:id', patchItemController);
+routes.delete('/:id', deleteItemController);

@@ -1,29 +1,27 @@
-import type { Request, Response } from 'express';
-import type { AnyObjectSchema, Asserts } from 'yup';
+import type { Response } from 'express';
+import type { AnyObjectSchema } from 'yup';
 
 import { StatusCode } from '../models';
+import { Validated } from '../models/request';
 
 import { AppError, AppFailure, ValidationError } from './errors';
-
-export type UnknownRequest = Request<unknown, unknown, unknown>;
-export type ValidatedRequest<T extends AnyObjectSchema> = UnknownRequest & Asserts<T>;
 
 abstract class AbstractController<TRequest extends AnyObjectSchema = AnyObjectSchema> {
     private _error: AppError;
     protected abstract readonly requestSchema: TRequest | null;
-    protected abstract implementation(req: ValidatedRequest<TRequest>, res: Response);
+    protected abstract implementation(req: Validated<TRequest>, res: Response);
 
-    protected async validateRequest(req: TRequest): Promise<TRequest | ValidatedRequest<TRequest>> {
+    protected async validateRequest(req: TRequest): Promise<TRequest | Validated<TRequest>> {
         return !this.requestSchema
             ? req
             : this.requestSchema.validate(req, { abortEarly: false }).catch((e) => {
-                  throw new ValidationError(e.errors.join(','));
+                  throw new ValidationError(e.errors);
               });
     }
 
     public async execute(req: TRequest, res: Response): Promise<void> {
         try {
-            const validatedRequest = (await this.validateRequest(req)) as ValidatedRequest<TRequest>;
+            const validatedRequest = (await this.validateRequest(req)) as Validated<TRequest>;
             await this.implementation(validatedRequest, res);
         } catch (err) {
             const e = err instanceof AppError ? err : new AppFailure(err.message);

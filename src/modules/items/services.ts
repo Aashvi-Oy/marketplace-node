@@ -1,6 +1,7 @@
+import { Item, User } from '@prisma/client';
+
 import { AppError, NotFoundError } from '../../core/errors';
 import prisma from '../../db/client';
-import { Item, ItemCreateInput, User } from '../../models';
 
 const readAllItems = async (): Promise<Item[]> => prisma.item.findMany();
 
@@ -24,7 +25,7 @@ const readOwner = async (id: number): Promise<User> => {
     return owner;
 };
 
-const createItem = async (ownerId: number, item: ItemCreateInput): Promise<Item> => {
+const createItem = async (ownerId: number, item: Omit<Item, 'id' | 'ownerId'>): Promise<Item> => {
     const owner = await readOwner(ownerId);
     return prisma.item.create({ data: { ...item, ownerId: Number(owner.id) } });
 };

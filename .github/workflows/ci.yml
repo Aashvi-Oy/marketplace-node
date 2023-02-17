@@ -2,11 +2,10 @@ name: Continuous Integration
 
 on:
   push:
+    branches: [master]
   pull_request:
-    types:
-      - opened
-    branches:
-      - main
+    branches: [master]
+  workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -66,6 +65,7 @@ jobs:
       - name: Run test coverage
         run: yarn test
         env:
+          JWT_SECRET: secret
           POSTGRES_HOST: postgres
           DATABASE_URL: postgresql://prisma:prisma@postgres:5432/tests?schema=public
 

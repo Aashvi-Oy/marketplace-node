@@ -1,30 +1,16 @@
-import { AppError } from '../../core/errors';
-import { prismaMock } from '../../db/singleton';
-import { Item, ItemCreateInput, User } from '../../models';
+import { Item, User } from '@prisma/client';
 
-import { createItem, deleteItem, readAllItems, readOwner, updateItem } from './services';
+import { AppError } from '../../../core/errors';
+import { getItemMock, getUserMock } from '../../../db/mocks/mocks';
+import { prismaMock } from '../../../db/mocks/singleton';
+import { createItem, deleteItem, readAllItems, readOwner, updateItem } from '../services';
 
 import ResolvedValue = jest.ResolvedValue;
 
-const userMock: User = {
-    id: 1,
-    email: 'test@test.com',
-    password: 'test',
-    name: 'test',
-    address: 'test',
-    phone: 'test',
-};
-
-const itemsMock: ItemCreateInput = {
-    name: 'test',
-    description: 'test',
-    price: 10,
-    image: 'test',
-    tags: ['test'],
-    ratings: [1, 2, 3],
-};
-
 describe('Test item services', () => {
+    const userMock = getUserMock();
+    const itemsMock = getItemMock();
+
     it('should return all the items', async () => {
         // @ts-expect-error -- awaiting fix: https://github.com/prisma/prisma/issues/10203
         prismaMock.item.findMany.mockResolvedValue([{ ...itemsMock, id: 1, ownerId: 21 }] as ResolvedValue<Item[]>);
