@@ -14,12 +14,30 @@ servers:
     - url: http://localhost:8080
 
 tags:
+    - name: Health
+      description: Operations about health
     - name: User
       description: Operations about users
     - name: Items
       description: All purchase able items
 
 paths:
+    /health:
+        get:
+            tags:
+                - Health
+            summary: Health check
+            operationId: getHealth
+            responses:
+                200:
+                    description: Health check
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    message:
+                                        type: string
+                                        description: Health check
     /user/login:
         get:
             security:
@@ -35,6 +53,8 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/User"
+                400:
+                    description: Data validation error. See response for details.
 
     /user/register:
         post:
@@ -47,13 +67,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            properties:
-                                email:
-                                    type: string
-                                    description: The email of the user to create
-                                password:
-                                    type: string
-                                    description: The password of the user to create
+                            $ref: "#/components/schemas/User"
             responses:
                 201:
                     description: The newly created user
@@ -61,6 +75,15 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/User"
+                400:
+                    description: Data validation error. See response for details.
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    message:
+                                        type: string
+                                        description: Error message
     /user:
         patch:
             tags:
@@ -74,7 +97,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/UpdatingUser"
+                            $ref: "#/components/schemas/PartialUser"
             responses:
                 200:
                     description: Update logged in user information
@@ -115,6 +138,15 @@ paths:
                                 type: array
                                 items:
                                     $ref: "#/components/schemas/Item"
+                404:
+                    description: Data validation error. See response for details.
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    message:
+                                        type: string
+                                        description: Error message
         post:
             tags:
                 - Items
@@ -135,6 +167,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/Item"
+                401:
+                    description: Data validation error. See response for details.
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    message:
+                                        type: string
+                                        description: Error message
+                400:
+                    description: Data validation error. See response for details.
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    message:
+                                        type: string
+                                        description: Error message
     /items/{id}:
         get:
             tags:
@@ -155,6 +205,15 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/Item"
+                404:
+                    description: Data validation error. See response for details.
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    message:
+                                        type: string
+                                        description: Error message
         patch:
             tags:
                 - Items
@@ -174,7 +233,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/Item"
+                            $ref: "#/components/schemas/PartialItem"
             responses:
                 200:
                     description: The updated item
@@ -182,6 +241,15 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/Item"
+                404:
+                    description: Data validation error. See response for details.
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    message:
+                                        type: string
+                                        description: Error message
         delete:
             tags:
                 - Items
@@ -197,13 +265,30 @@ paths:
                   schema:
                       type: integer
             responses:
-                204:
+                200:
                     description: The item has been successfully deleted
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    message:
+                                        type: string
+                                        description: Item deleted successfully
+                404:
+                    description: Data validation error. See response for details.
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    message:
+                                        type: string
+                                        description: Error message
 
 components:
     schemas:
         Item:
             type: object
+            required: [name]
             properties:
                 id:
                     type: integer
@@ -211,6 +296,37 @@ components:
                 owner:
                     type: integer
                     description: The id of the user who created the item
+                name:
+                    type: string
+                    description: The name of the item
+                description:
+                    type: string
+                    default: ""
+                    description: The description of the item
+                tags:
+                    type: array
+                    items:
+                        type: string
+                    default: []
+                    description: A list of tags associated with the item
+                image:
+                    type: string
+                    nullable: true
+                    default: null
+                    description: An image of the item
+                ratings:
+                    type: array
+                    items:
+                        type: integer
+                    default: []
+                    description: A list of ratings given to the item
+                price:
+                    type: number
+                    default: 0
+                    description: The price of the item
+        PartialItem:
+            type: object
+            properties:
                 name:
                     type: string
                     description: The name of the item
@@ -224,6 +340,7 @@ components:
                     description: A list of tags associated with the item
                 image:
                     type: string
+                    nullable: true
                     description: An image of the item
                 ratings:
                     type: array
@@ -233,11 +350,9 @@ components:
                 price:
                     type: number
                     description: The price of the item
-                    required:
-                        - name
-                        - price
         User:
             type: object
+            required: [email, password]
             properties:
                 id:
                     type: integer
@@ -250,14 +365,17 @@ components:
                     description: User password
                 name:
                     type: string
+                    default: ""
                     description: Name of the user
                 address:
                     type: string
+                    default: ""
                     description: Address of the user
                 phone:
                     type: string
+                    default: ""
                     description: Phone number of the user
-        UpdatingUser:
+        PartialUser:
             type: object
             properties:
                 password:

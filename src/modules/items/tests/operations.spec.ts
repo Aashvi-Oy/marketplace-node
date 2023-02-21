@@ -8,7 +8,7 @@ import { getItemMock, getUserMock } from '../../../db/mocks/mocks';
 const usersMock = Array.from({ length: 6 }).map(() => getUserMock());
 const itemsMock = Array.from({ length: 10 }).map(() => getItemMock());
 
-describe('Routes test', () => {
+describe('Item operations test', () => {
     let users = [];
     let items = [];
     beforeAll(async () => {
@@ -20,7 +20,7 @@ describe('Routes test', () => {
         );
     });
 
-    describe('Item GET routes', () => {
+    describe('Item GET operation', () => {
         it('GET /items => All items', async () => {
             const res = await request(app).get('/items');
             expect(res).toBeDefined();
@@ -43,7 +43,7 @@ describe('Routes test', () => {
         });
     });
 
-    describe('Item Patch routes', () => {
+    describe('Item Patch operations', () => {
         let bearerToken = null;
         beforeAll(async () => {
             const token = await createAuthToken(users[0]);
@@ -79,7 +79,7 @@ describe('Routes test', () => {
             expect(res.body.message).toContain('Item not found');
         });
 
-        describe('Delete Item routes', () => {
+        describe('Delete Item operations', () => {
             let bearerToken = null;
             beforeAll(async () => {
                 const token = await createAuthToken(users[0]);
@@ -101,7 +101,7 @@ describe('Routes test', () => {
             });
         });
 
-        describe('Item POST routes', () => {
+        describe('Item POST operations', () => {
             let bearerToken = null;
             beforeAll(async () => {
                 const token = await createAuthToken(users[0]);
@@ -110,7 +110,9 @@ describe('Routes test', () => {
             it('Post /items => missing required field name', async () => {
                 const res = await request(app).post('/items').set('Authorization', bearerToken).send({});
                 expect(res.status).toEqual(400);
-                expect(res.body).toContain('Item name is required');
+                expect(res.body.errors).toEqual(
+                    expect.arrayContaining([expect.objectContaining({ message: "must have required property 'name'" })])
+                );
             });
 
             it('Post /items => Error unauthorize error', async () => {

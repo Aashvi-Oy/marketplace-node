@@ -1,8 +1,4 @@
-import { Router } from 'express';
-
 import { GetUserController, PostUserController, PatchUserController, DeleteUserController } from './controllers';
-
-export const routes = Router();
 
 // User controller
 const getUserController = (req, res) => new GetUserController().execute(req, res);
