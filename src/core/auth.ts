@@ -3,7 +3,6 @@ import * as bcrypt from 'bcrypt';
 import dayjs from 'dayjs';
 import { expressjwt } from 'express-jwt';
 import * as jsonwebtoken from 'jsonwebtoken';
-import { BasicStrategy } from 'passport-http';
 
 import { readUser } from '../modules/user/services';
 
@@ -31,13 +30,22 @@ export const createAuthToken = (user: User): Promise<string> => {
     );
 };
 
-export const basicAuthentication = new BasicStrategy((username, password, done) => {
-    readUser(username)
-        .then((user) => {
-            if (!comparePassword(password, user.password)) {
-                return done(new UnAuthorizedError('Incorrect password.'));
-            }
-            return done(null, user);
-        })
-        .catch((err) => done(new UnAuthorizedError(err.message)));
-});
+export const basicAuthentication = (req): Promise<boolean> => {
+    if (!req.headers.authorization || req.headers.authorization.indexOf('Basic ') === -1) {
+        throw new UnAuthorizedError('Missing Authorization Header');
+    }
+
+    // verify auth credentials
+    const base64Credentials = req.headers.authorization.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [username, password] = credentials.split(':');
+
+    return readUser(username).then((user) => {
+        if (!comparePassword(password, user.password)) {
+            throw new UnAuthorizedError('Incorrect password.');
+        } else {
+            req.user = user;
+        }
+        return true;
+    });
+};

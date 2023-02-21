@@ -22,9 +22,12 @@ tags:
 paths:
     /user/login:
         get:
+            security:
+                - basicAuth: []
             tags:
                 - User
             summary: Retrieve a user with with a given email and password
+            operationId: getUser
             responses:
                 200:
                     description: Retrieve a user and its bearer token
@@ -38,6 +41,7 @@ paths:
             tags:
                 - User
             summary: Create a new user
+            operationId: postUser
             requestBody:
                 required: true
                 content:
@@ -64,6 +68,7 @@ paths:
             security:
                 - bearerAuth: []
             summary: Update logged in user information
+            operationId: patchUser
             requestBody:
                 required: true
                 content:
@@ -84,6 +89,7 @@ paths:
             security:
                 - bearerAuth: []
             summary: Delete logged in user
+            operationId: deleteUser
             responses:
                 200:
                     description: User can delete himself/herself
@@ -99,6 +105,7 @@ paths:
             tags:
                 - Items
             summary: Retrieve a list of all items
+            operationId: getAllItems
             responses:
                 200:
                     description: A list of all items
@@ -112,6 +119,7 @@ paths:
             tags:
                 - Items
             summary: Create a new item
+            operationId: postItem
             security:
                 - bearerAuth: []
             requestBody:
@@ -132,6 +140,7 @@ paths:
             tags:
                 - Items
             summary: Retrieve a specific item by id
+            operationId: getItem
             parameters:
                 - name: id
                   in: path
@@ -150,6 +159,7 @@ paths:
             tags:
                 - Items
             summary: Update a specific item by id
+            operationId: patchItem
             security:
                 - bearerAuth: []
             parameters:
@@ -176,6 +186,7 @@ paths:
             tags:
                 - Items
             summary: Delete a specific item by id
+            operationId: deleteItem
             security:
                 - bearerAuth: []
             parameters:
@@ -188,6 +199,7 @@ paths:
             responses:
                 204:
                     description: The item has been successfully deleted
+
 components:
     schemas:
         Item:
@@ -266,3 +278,6 @@ components:
             type: http
             scheme: bearer
             bearerFormat: JWT
+        basicAuth:
+            type: http
+            scheme: basic

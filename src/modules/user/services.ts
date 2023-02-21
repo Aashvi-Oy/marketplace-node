@@ -1,7 +1,7 @@
 import { User } from '@prisma/client';
 
 import { hashPassword } from '../../core/auth';
-import { NotFoundError } from '../../core/errors';
+import { AppError, NotFoundError } from '../../core/errors';
 import prisma from '../../db/client';
 
 const readUser = async (identifier: string): Promise<User> => {
@@ -16,6 +16,12 @@ const readUser = async (identifier: string): Promise<User> => {
 
 const createUser = async (user: Omit<User, 'id'>): Promise<User> => {
     const password = hashPassword(user.password);
+    const existingUser = await prisma.user.findFirst({
+        where: { email: user.email },
+    });
+    if (existingUser) {
+        throw new AppError('User already exists');
+    }
     return prisma.user.create({ data: { ...user, password } });
 };
 
