@@ -14,11 +14,6 @@ describe('Test basic auth', () => {
         );
     });
 
-    // TODO: CHECK WHY THIS IS NOT WORKING ON THE CI
-    // afterAll(async () => {
-    //     await Promise.all(users.map((u) => prisma.user.delete({ where: { id: u.id } })));
-    // });
-
     it('Trying to log with no email and password', async () => {
         const res = await request(app).get('/user/login');
         expect(res.status).toEqual(401);
@@ -48,11 +43,15 @@ describe('Test basic auth', () => {
     it('User registration throw missing required field error', async () => {
         const res = await request(app).post('/user/register').send({});
         expect(res.status).toEqual(400);
-        expect(res.body).toContain('Email is required');
-        expect(res.body).toContain('Password is required');
+        expect(res.body.errors).toEqual(
+            expect.arrayContaining([expect.objectContaining({ message: "must have required property 'email'" })])
+        );
+        expect(res.body.errors).toEqual(
+            expect.arrayContaining([expect.objectContaining({ message: "must have required property 'password'" })])
+        );
     });
 
-    it('User registration in success', async () => {
+    it('User registration is success', async () => {
         const res = await request(app).post('/user/register').send(getUserMock());
         expect(res.status).toEqual(201);
         expect(res.body.id).toBeTruthy();
@@ -61,7 +60,7 @@ describe('Test basic auth', () => {
     it('Update user name throw unatuthorize error', async () => {
         const res = await request(app).patch('/user').send({ name: 'new name' });
         expect(res.status).toEqual(401);
-        expect(res.body.message).toEqual('Invalid/Missing token');
+        expect(res.body.message).toEqual('No authorization token was found');
     });
 
     it('Update user name should be success', async () => {

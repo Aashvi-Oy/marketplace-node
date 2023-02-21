@@ -14,12 +14,6 @@ export class AppFailure extends Error {
     }
 }
 
-export class ValidationError extends AppError {
-    constructor(readonly message: string) {
-        super(message);
-    }
-}
-
 export class NotFoundError extends AppError {
     readonly status: StatusCode = StatusCode.NotFound;
     constructor(readonly message) {
