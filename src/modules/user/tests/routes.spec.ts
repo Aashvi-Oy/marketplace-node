@@ -26,7 +26,7 @@ describe('Test basic auth', () => {
 
     it('Invalid sign in with invalid email and password', async () => {
         const res = await request(app).get('/user/login').auth('doesntexist@ext.com', 'wrong', { type: 'basic' });
-        expect(res.status).toEqual(401);
+        expect(res.status).toEqual(404);
         expect(res.text).toContain('User not found');
     });
 

@@ -40,13 +40,11 @@ describe('Test user services', () => {
     });
 
     it('should throw an error for unique constraints create a user', async () => {
-        prismaMock.user.create.mockResolvedValue({ ...userMock, id: 2, email: 'a@a.fi' } as ResolvedValue<AppError>);
+        const error = new AppError('User already exists');
+        prismaMock.user.findFirst.mockResolvedValue({ ...userMock, email: 'a@a.fi' } as ResolvedValue<User>);
+        prismaMock.user.create.mockRejectedValue(error as ResolvedValue<AppError>);
 
-        await expect(createUser({ ...userMock, email: 'a@a.fi' })).resolves.toEqual({
-            ...userMock,
-            id: 2,
-            email: 'a@a.fi',
-        });
+        await expect(createUser({ ...userMock, email: 'a@a.fi' })).rejects.toEqual(error);
     });
 
     it('should update a user with valid data ', async () => {

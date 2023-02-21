@@ -20,12 +20,6 @@ describe('Routes test', () => {
         );
     });
 
-    afterAll(async () => {
-        // Since there is delete cascade on the database, we only need to delete the users
-        // and all its related items will be deleted as well
-        await Promise.all(users.map((u) => prisma.user.delete({ where: { id: u.id } })));
-    });
-
     describe('Item GET routes', () => {
         it('GET /items => All items', async () => {
             const res = await request(app).get('/items');
