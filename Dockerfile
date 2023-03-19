@@ -7,3 +7,5 @@ WORKDIR /app
 COPY . /app/
 
 RUN yarn install --frozen-lockfile
+RUN yarn uninstall bcrypt
+RUN yarn install bcrypt

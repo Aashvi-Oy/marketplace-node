@@ -4,13 +4,16 @@ import express, { Request } from 'express';
 import { initialize } from 'express-openapi';
 import * as OpenApiValidator from 'express-openapi-validator';
 import { Path } from 'express-unless';
+import swaggerUi from 'swagger-ui-express';
 
 import { authenticate, basicAuthentication } from './core/auth';
 import * as health from './modules/health/operations';
 import * as items from './modules/items/operations';
 import * as user from './modules/user/operations';
+import openapiSpec from './openapi';
 
 const unprotectedUrls: Path[] = [
+    { url: '/docs', methods: ['GET'] },
     { url: '/health', methods: ['GET'] },
     { url: '/user/login', methods: ['GET'] },
     { url: '/user/register', methods: ['POST'] },
@@ -22,10 +25,20 @@ const app = express();
 app.use(cors());
 app.use(json());
 app.use(urlencoded({ extended: true }));
+app.use(
+    '/docs',
+    swaggerUi.serve,
+    swaggerUi.setup(undefined, {
+        swaggerOptions: {
+            spec: openapiSpec,
+        },
+    })
+);
 app.use(authenticate.unless({ path: unprotectedUrls }));
+
 app.use(
     OpenApiValidator.middleware({
-        apiSpec: './docs/api_spec.yaml',
+        apiSpec: openapiSpec,
         validateRequests: {
             // Remove unknown properties from request body
             removeAdditional: 'all',
@@ -44,7 +57,7 @@ app.use((err, req, res, _) => {
 
 initialize({
     app,
-    apiDoc: './docs/api_spec.yaml',
+    apiDoc: openapiSpec,
     operations: {
         ...health.operations,
         ...user.operations,

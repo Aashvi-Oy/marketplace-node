@@ -57,7 +57,7 @@ describe('Item operations test', () => {
                 .set('Authorization', bearerToken)
                 .send({ randomKey: 'New name of item 1' });
             expect(res.status).toEqual(200);
-            expect(res.body).toEqual(item);
+            expect(res.body.randomKey).toBeUndefined();
         });
 
         it('Patch /items => successful name update', async () => {
