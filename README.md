@@ -6,7 +6,7 @@ This repository contains a list of REST API endpoint for operating a simple mark
 
 ## DOCS
 
-The API documentation can be found [here](https://aashvi-oy.github.io/marketplace-node/)
+Documentation for this project can be found under `/docs` route.
 
 ## Environment Setup
 

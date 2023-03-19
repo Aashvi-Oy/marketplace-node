@@ -11,7 +11,7 @@ services:
       POSTGRES_USER: marketplace_user
       POSTGRES_PASSWORD: marketplace_password
     ports:
-      - "127.0.0.1:5432:5432"
+      - "5432:5432"
     container_name: marketplace-database
 
   test_db:
@@ -30,6 +30,7 @@ services:
       context: .
       target: backend
     environment:
+      - SECRET=secret
       - DATABASE_URL=postgresql://marketplace_user:marketplace_password@db/marketplace?schema=public
     container_name: node-task-api
     volumes:
